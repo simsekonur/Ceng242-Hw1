@@ -28,10 +28,14 @@ module HW1 (
 --
 -- Fellowship of the Grid (25, 5, 5, 5 points)
 form :: [a] -> (Int, Int) -> [[a]] 
-form _ _ = undefined
+form [] (_,_) = []
+form lst (a,b) = take b lst : [] ++ form(drop b lst ) (a,b)
+
 
 constGrid :: a -> (Int, Int) -> [[a]]
-constGrid _ _ = undefined
+constGrid _ (_,0) = []
+constGrid value (_,1) = [value] : [] 
+constGrid value (a,b) = [value] : constGrid value (a,b-1)
 
 flatten :: [[a]] -> [a]
 flatten _ = undefined 
