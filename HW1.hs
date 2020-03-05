@@ -33,25 +33,31 @@ form lst (a,b) = take b lst : [] ++ form(drop b lst ) (a,b)
 
 
 constGrid :: a -> (Int, Int) -> [[a]]
-constGrid _ (_,0) = []
-constGrid value (_,1) = [value] : [] 
-constGrid value (a,b) = [value] : constGrid value (a,b-1)
+
+constGrid value (a,b) = take a (repeat (take b (repeat value)))
 
 flatten :: [[a]] -> [a]
-flatten _ = undefined 
+flatten xss = [x| xs <- xss , x <- xs ] 
 
 access :: [[a]] -> (Int, Int) -> a
 access lst (a,b) = (lst !! a )!! b
 ----------------------------
--- The Two Signatures (10, 5, 5, 10 points)
+-- The Two Signatures (10, 5, 5, 10 points) 
+--slice grid (r1,r2) (c1,c2) = [(grid !! r) !! c : [] | r<-[r1,r2-1],c<-[c1,c2-1]]
+--slice grid (r1,r2) (c1,c2) = [(grid !!r)!!c | c <- [c1..c2-1],r<-[r1..r2-1]] :[] 
+--
 slice :: [[a]] -> (Int, Int) -> (Int, Int) -> [[a]]
-slice _ _ _ = undefined 
+slice grid (r1,r2) (c1,c2) =  if r1 == r2 then [(grid !! r1) !! c : [] | c<-[c1,c2-1]] else slice grid (r1+1) (c1,c2)
 
 vcat :: [[a]] -> [[a]] -> [[a]]
-vcat _ _ = undefined
+vcat [] lst2 = lst2
+vcat lst1 [] = lst1
+vcat lst1 lst2 = head lst1 : [] ++ (vcat(tail lst1) lst2 )
 
 hcat :: [[a]] -> [[a]] -> [[a]]
-hcat _ _ = undefined
+hcat [] lst2 = lst2
+hcat lst1 [] = lst1
+hcat lst1 lst2 = (head lst1 ++ head lst2) : (hcat (tail lst1) (tail lst2) )
 
 without :: [[a]] -> (Int, Int) -> (Int, Int) -> [[a]]
 without _ _ _ = undefined
