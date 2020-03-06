@@ -45,9 +45,10 @@ access lst (a,b) = (lst !! a )!! b
 -- The Two Signatures (10, 5, 5, 10 points) 
 --slice grid (r1,r2) (c1,c2) = [(grid !! r) !! c : [] | r<-[r1,r2-1],c<-[c1,c2-1]]
 --slice grid (r1,r2) (c1,c2) = [(grid !!r)!!c | c <- [c1..c2-1],r<-[r1..r2-1]] :[] 
+--slice grid (r1,r2) (c1,c2) =  if r1 == r2 then [(grid !! r1) !! c : [] | c<-[c1,c2-1]] else slice grid (r1+1) (c1,c2)
 --
 slice :: [[a]] -> (Int, Int) -> (Int, Int) -> [[a]]
-slice grid (r1,r2) (c1,c2) =  if r1 == r2 then [(grid !! r1) !! c : [] | c<-[c1,c2-1]] else slice grid (r1+1) (c1,c2)
+slice grid (r1,r2) (c1,c2) = form( flatten ([(grid !!r)!!c | r <- [r1..r2-1], c <- [c1..c2-1]] : []) ) (r2-r1,c2-c1)
 
 vcat :: [[a]] -> [[a]] -> [[a]]
 vcat [] lst2 = lst2
