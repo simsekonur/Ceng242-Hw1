@@ -9,7 +9,7 @@ module HW1 (
     without,
     matches2d
 ) where
-
+import Data.List
 -- do not modify the module declaration above!
 -- this will ensure that you cannot load (compile)
 -- the module without implementing all of the functions.
@@ -33,7 +33,6 @@ form lst (a,b) = take b lst : [] ++ form(drop b lst ) (a,b)
 
 
 constGrid :: a -> (Int, Int) -> [[a]]
-
 constGrid value (a,b) = take a (repeat (take b (repeat value)))
 
 flatten :: [[a]] -> [a]
@@ -43,12 +42,13 @@ access :: [[a]] -> (Int, Int) -> a
 access lst (a,b) = (lst !! a )!! b
 ----------------------------
 -- The Two Signatures (10, 5, 5, 10 points) 
---slice grid (r1,r2) (c1,c2) = [(grid !! r) !! c : [] | r<-[r1,r2-1],c<-[c1,c2-1]]
---slice grid (r1,r2) (c1,c2) = [(grid !!r)!!c | c <- [c1..c2-1],r<-[r1..r2-1]] :[] 
---slice grid (r1,r2) (c1,c2) =  if r1 == r2 then [(grid !! r1) !! c : [] | c<-[c1,c2-1]] else slice grid (r1+1) (c1,c2)
---
+
+
+anotherSlice :: [[a]] -> (Int, Int) -> [Int] -> [[a]]
+anotherSlice grid (r1,r2) lst = if r1 == r2 then []  else [(grid !! (r1) )!! c | c <- lst] : [] ++ anotherSlice grid (r1+1,r2) lst 
+
 slice :: [[a]] -> (Int, Int) -> (Int, Int) -> [[a]]
-slice grid (r1,r2) (c1,c2) = form( flatten ([(grid !!r)!!c | r <- [r1..r2-1], c <- [c1..c2-1]] : []) ) (r2-r1,c2-c1)
+slice grid (r1,r2) (c1,c2) =  if r1 == r2 then []  else [(grid !! (r1) )!! c | c <- [c1..c2-1]] : [] ++ slice grid (r1+1,r2)(c1,c2)
 
 vcat :: [[a]] -> [[a]] -> [[a]]
 vcat [] lst2 = lst2
@@ -61,7 +61,9 @@ hcat lst1 [] = lst1
 hcat lst1 lst2 = (head lst1 ++ head lst2) : (hcat (tail lst1) (tail lst2) )
 
 without :: [[a]] -> (Int, Int) -> (Int, Int) -> [[a]]
-without _ _ _ = undefined
+--without grid (r1,r2) (c1,c2) = if (r1==r2 && c1==c2) then grid else if(r1==r2) then slice grid (0,length(grid)) (c2,length(grid!!0))  else if(c1==c2) then slice grid (r2,length(grid)) (0,length(grid !!0)) else slice grid (r2,length(grid)) (c2,length(grid!!0)) 
+--without a (r1,r2) (c1,c2) = form( flatten ([(a !!i)!!j | i<-[0..(length (head a)-1)], i `notElem` [r1..r2-1], j<- [0..(length a - 1)], j `notElem` [c1..c2-1]] : []) ) ((length (head a)-r2+c1),(length a - c2+c1))
+without grid (r1,r2) (c1,c2) = if r1==r2 && c1==c2 then grid else anotherSlice grid (0,r1) ([0..length(grid!!0)-1]\\[c1..(c2-1)]) ++ anotherSlice grid (r2,length(grid)) ([0..length(grid!!0)-1]\\[c1..(c2-1)])
 ----------------------------
 -- Return of the Non-trivial (30 points, 15 subject to runtime constraints)
 matches2d :: Eq a => [[a]] -> [[a]] -> [(Int, Int)]
