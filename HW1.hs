@@ -27,6 +27,9 @@ import Data.List
 -------------------------
 --
 -- Fellowship of the Grid (25, 5, 5, 5 points)
+
+lst = []
+
 form :: [a] -> (Int, Int) -> [[a]] 
 form [] (_,_) = []
 form lst (a,b) = take b lst : [] ++ form(drop b lst ) (a,b)
@@ -62,12 +65,44 @@ hcat lst1 lst2 = (head lst1 ++ head lst2) : (hcat (tail lst1) (tail lst2) )
 
 without :: [[a]] -> (Int, Int) -> (Int, Int) -> [[a]]
 --without grid (r1,r2) (c1,c2) = if (r1==r2 && c1==c2) then grid else if(r1==r2) then slice grid (0,length(grid)) (c2,length(grid!!0))  else if(c1==c2) then slice grid (r2,length(grid)) (0,length(grid !!0)) else slice grid (r2,length(grid)) (c2,length(grid!!0)) 
---without a (r1,r2) (c1,c2) = form( flatten ([(a !!i)!!j | i<-[0..(length (head a)-1)], i `notElem` [r1..r2-1], j<- [0..(length a - 1)], j `notElem` [c1..c2-1]] : []) ) ((length (head a)-r2+c1),(length a - c2+c1))
 without grid (r1,r2) (c1,c2) = if r1==r2 && c1==c2 then grid else anotherSlice grid (0,r1) ([0..length(grid!!0)-1]\\[c1..(c2-1)]) ++ anotherSlice grid (r2,length(grid)) ([0..length(grid!!0)-1]\\[c1..(c2-1)])
 ----------------------------
 -- Return of the Non-trivial (30 points, 15 subject to runtime constraints)
+--matchHelper grid value r c lst = if r == length(grid) then  matchHelper grid value (0) c+1 lst else if (grid !! r )!! c == value then matchHelper grid value (r+1) c ([(r,c)]++lst) else if r== length(grid) then [(5,5)] else undefined
+
+--matchHelper grid value r c lst = if r == length(grid) && c < length (head grid) then  matchHelper grid value 0 (c+1) lst else if (grid !! r )!! c == value then matchHelper grid value (r+1) c ([(r,c)]++lst) else undefined
+--matchHelper grid value r c = if r == length(grid) then [] else if (grid !! r )!! c == value then [(r,c)]++lst  else matchHelper grid value (r+1) c
+q =  [[1,1,2],[1,0,1],[2,1,0]]
+p = [[0,1]]
+
+matchHelper grid value r c lst=
+    if ((r== (length grid)-1) && (c == (length (head grid))-1) && (grid !! r )!! c == value ) --- 
+        then ([(r,c)]++lst)
+            else  if ((r== (length grid)-1) && (c == (length (head grid))-1) && (grid !! r )!! c /= value )
+                then lst 
+                    else if r == (length grid)  ---
+                        then matchHelper grid value 0 (c+1) lst
+                            else if (grid !! r )!! c == value
+                                then matchHelper grid value (r+1) c ([(r,c)]++lst)  
+                                    else matchHelper grid value (r+1) c lst
+givefirst (x,y)= x
+giveSecond (x,y)= y
+
+giveMeList grid value lst = matchHelper grid value 0 0 [] -- Gives [(2,2),(0,0)]
+
+helperNew grid pattern lst  outlist = 
+    if givefirst(head(lst)) + length(pattern) > length grid || giveSecond(head(lst)) + length(head pattern) >length(head grid)
+        then outlist
+            else if slice grid (givefirst(head(lst)), givefirst(head(lst))+length(pattern)) (giveSecond(head(lst)), giveSecond(head(lst)) + length (head pattern)) == pattern
+                then [(givefirst(head(lst)),giveSecond(head(lst)))]++outlist
+                    else helperNew grid pattern (tail lst)  outlist
+
 matches2d :: Eq a => [[a]] -> [[a]] -> [(Int, Int)]
-matches2d _ _ = undefined
+matches2d bigger smaller  = 
+    if length (flatten(smaller)) == 1 
+        then matchHelper bigger (flatten(smaller)!!0) 0 0 [] 
+        else helperNew bigger smaller (giveMeList bigger ((smaller!!0)!!0) [] ) []
+ 
 ----------------------------
 -- What is undefined? Just a value that will cause an error
 -- when evaluated, from the GHC implementation:
